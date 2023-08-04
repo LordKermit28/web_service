@@ -13,3 +13,7 @@ def contacts(request):
 
         print(name, phone, message)
     return render(request, 'main/contacts.html')
+
+
+def product(request):
+    return render(request, 'main/product.html')
