@@ -15,10 +15,12 @@ class Product(models.Model):
     date_create = models.DateField(null=True, blank=True)
     date_last_change = models.DateField(null=True, blank=True)
 
-
-
     def __str__(self):
         return f"{self.name}"
+
+    class Meta:
+        verbose_name = 'Product'
+        verbose_name_plural = 'Products'
 
 
 
