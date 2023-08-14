@@ -1,0 +1,21 @@
+{% extends 'catalog/base.html' %}
+{% load my_tags %}
+{% block content %}
+
+ <div class="row mb-2">
+    <div class="col-md-12">
+      <div class="row g-0">
+        <div class="col p-4">
+          <strong class="d-inline-block mb-2 text-primary-emphasis">{{ product.category }}</strong>
+          <h3 class="mb-0">{{ product.name }}</h3>
+          <div class="mb-1 text-body-secondary">{{ product.price }}</div>
+          <p class="card-text mb-auto">{{ product.description }}</p>
+        </div>
+        <div class="col-auto d-none d-lg-block">
+          <img src="{{ product.image.url }}" />
+        </div>
+      </div>
+    </div>
+ </div>
+
+{% endblock %}

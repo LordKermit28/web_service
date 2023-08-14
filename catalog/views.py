@@ -1,10 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from catalog.models import Product
 
 
 def index(request):
-    return render(request, 'main/index.html')
+    return render(request, 'catalog/index.html')
 
 
 def contacts(request):
@@ -14,15 +14,22 @@ def contacts(request):
         message = request.POST.get('message')
 
         print(name, phone, message)
-    return render(request, 'main/contacts.html')
+    return render(request, 'catalog/contacts.html')
 
 
 def products(request):
     products_list = Product.objects.all()
-    content = {
-        'objects_lict': products_list
+    context = {
+        'objects_list': products_list
     }
-    return render(request, 'main/products.html', content)
+    return render(request, 'catalog/products.html', context)
 
-def product(request):
-    return render(request, 'main/product.html')
+from django.shortcuts import get_object_or_404
+
+def product(request, id):
+    product = get_object_or_404(Product, id=id)
+
+    context = {
+        'product': product
+    }
+    return render(request, 'catalog/product.html', context)
