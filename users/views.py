@@ -6,54 +6,63 @@ from django.views import View
 from django.views.generic import UpdateView, CreateView
 from django.core.mail import send_mail
 from users.forms import UserRegisterForm, UserProfileForm
-from users.models import User
-from data import my_ps, my_email
+from users.models import User, VerificationToken
+import dotenv
+import os
+
+dotenv.load_dotenv()
+
+email = os.getenv('EMAIL')
+password = os.getenv('PASSWORD')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_HOST = 'smtp.yandex.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = my_email
-EMAIL_HOST_PASSWORD = my_ps
+EMAIL_HOST_USER = email
+EMAIL_HOST_PASSWORD = password
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 ACCOUNT_EMAIL_REQUIRED = True
 
-
 class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
-    template_name = 'register.html'
-    success_url = reverse_lazy('users:login')
+    template_name = 'users/register.html'
+    success_url = '/users/login/'
 
     def form_valid(self, form):
-        user = form.save(commit=False)
-        user.is_active = False
-        user.save()
+        response = super().form_valid(form)
+        token = default_token_generator.make_token(self.object)
+        print(token)
+        verify_url = self.request.build_absolute_uri(reverse_lazy('users:verify_email', args=[token]))
+        print(verify_url)
+        self.object.save()
+        subject = 'Подтвердите ваш адрес электронной почты'
+        message = f'Привет! Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке: {verify_url}'
+        from_email = EMAIL_HOST_USER
+        recipient_list = [self.object.email]
+        print(subject, message, from_email, recipient_list)
+        send_mail(subject=subject, message=message, from_email=from_email, recipient_list=recipient_list)
+        return response
 
-        token = default_token_generator.make_token(user)
-
-        verify_url = self.request.build_absolute_uri(
-            reverse_lazy('users:verify_email', args=[token])
-        )
-
-        send_mail(
-            'Пожалуйста, подтвердите свою электронную почту',
-            f'Привет {user.email}! Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке: {verify_url}',
-            'noreply@example.com',
-            [user.email],
-            fail_silently=False,
-        )
-        return super().form_valid(form)
 
 class VerifyEmailView(View):
-    def get(self, request, user_id, token):
-        user = get_object_or_404(User, id=user_id)
+    def get(self, request, *args, **kwargs):
+        token = self.kwargs['token']
+        verified_token = get_object_or_404(VerificationToken, token=token)
 
-        if default_token_generator.check_token(user, token):
+        if verified_token.is_active:
+            user = verified_token.user
             user.is_active = True
             user.save()
+
+            verified_token.is_active = False
+            verified_token.save()
+
             return redirect('users:login')
+
         return redirect('users:invalid_token')
+
 
 
 class ProfileView(UpdateView):
