@@ -16,6 +16,9 @@
               {% csrf_token %}
               {{ form.as_p }}
               <button type="submit" class="btn btn-success">Обновать</button>
+              <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="'/profile/genpassword/'">Забыли пароль?</a></li>
+              </ul>
             </form>
           </div>
         </div>

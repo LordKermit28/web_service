@@ -1,8 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.core.mail import send_mail
 from django.forms import inlineformset_factory
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
+from django.utils.decorators import method_decorator
 from django.utils.text import slugify
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
@@ -44,7 +46,7 @@ class ProductCreateView(CreateView):
             formset.save()
             return super().form_valid(form)
 
-
+@method_decorator(login_required, name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductForm
@@ -67,11 +69,11 @@ class ProductUpdateView(UpdateView):
             formset.save()
         return super().form_valid(form)
 
-
+@method_decorator(login_required, name='dispatch')
 class ProductListView(ListView):
     model = Product
 
-
+@method_decorator(login_required, name='dispatch')
 class ProductDetailView(DetailView):
     model = Product
 
@@ -82,7 +84,7 @@ class ProductDetailView(DetailView):
 
         context['versions'] = versions
         return context
-
+@method_decorator(login_required, name='dispatch')
 class ProductDeleteView(DeleteView):
     model = Product
     success_url = reverse_lazy('list_product')
