@@ -76,12 +76,10 @@ class ProfileView(UpdateView):
         return self.request.user
 
 
-
-
 class UserResetPasswordView(UpdateView):
     model = User
     form_class = UserPassportResetForm
-    template_name = 'users/register.html'
+    template_name = 'users/reset_password.html'
     success_url = '/users/login/'
 
     def generate_random_password(self):

@@ -24,4 +24,4 @@ class UserProfileForm(UserChangeForm):
 class UserPassportResetForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ('email')
+        fields = ('email',)
