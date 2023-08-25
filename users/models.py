@@ -8,7 +8,7 @@ class User(AbstractUser):
     country = models.CharField(max_length=100, verbose_name='country', blank=True, null=True)
     phone = models.CharField(max_length=35, verbose_name='phone', blank=True, null=True)
     avatar = models.ImageField(upload_to='users/', verbose_name='avatar', blank=True, null=True)
-
+    is_active = models.BooleanField(default=False)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

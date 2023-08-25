@@ -28,25 +28,20 @@ class RegisterView(CreateView):
 
     def form_valid(self, form):
 
-        response = super().form_valid(form)
+        new_user = form.save()
 
-        password = self.generate_random_password()
-        self.object.set_password(password)
-
-        token = default_token_generator.make_token(self.object)
-        token_object = VerificationToken(user=self.object, token=token)
+        token = default_token_generator.make_token(new_user)
+        token_object = VerificationToken(user=new_user, token=token)
         token_object.save()
-        print(token)
         verify_url = self.request.build_absolute_uri(reverse_lazy('users:verify_email', kwargs={'token': token}))
-        print(verify_url)
-        self.object.save()
-        subject = 'Подтвердите ваш адрес электронной почты'
-        message = f'Привет! Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке: {verify_url}'
-        from_email = settings.EMAIL_HOST_USER
-        recipient_list = [self.object.email]
-        print(subject, message, from_email, recipient_list)
-        send_mail(subject=subject, message=message, from_email=from_email, recipient_list=recipient_list)
-        return response
+
+        send_mail(
+            subject='Подтвердите ваш адрес электронной почты',
+            message=f'Привет! Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке: {verify_url}',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[new_user.email],
+        )
+        return super().form_valid(form)
 
 
 class VerifyEmailView(View):
