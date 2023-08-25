@@ -34,8 +34,10 @@ class RegisterView(CreateView):
         self.object.set_password(password)
 
         token = default_token_generator.make_token(self.object)
+        token_object = VerificationToken(user=self.object, token=token)
+        token_object.save()
         print(token)
-        verify_url = self.request.build_absolute_uri(reverse_lazy('users:verify_email', args=[token]))
+        verify_url = self.request.build_absolute_uri(reverse_lazy('users:verify_email', kwargs={'token': token}))
         print(verify_url)
         self.object.save()
         subject = 'Подтвердите ваш адрес электронной почты'
@@ -44,7 +46,6 @@ class RegisterView(CreateView):
         recipient_list = [self.object.email]
         print(subject, message, from_email, recipient_list)
         send_mail(subject=subject, message=message, from_email=from_email, recipient_list=recipient_list)
-        print('SEND')
         return response
 
 
