@@ -38,7 +38,9 @@ class RegisterView(CreateView):
         send_mail(
             subject='Подтвердите ваш адрес электронной почты',
             message=f'Привет! Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке: {verify_url}',
-            from_email=settings.EMAIL_HOST_USER,
+            from_email=settings.SERVER_EMAIL,
+            auth_user=settings.EMAIL_HOST_USER,
+            auth_password=settings.EMAIL_HOST_PASSWORD,
             recipient_list=[new_user.email],
         )
         return super().form_valid(form)

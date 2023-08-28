@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import dotenv
 from pathlib import Path
 import os
-
+import django_smtp_ssl
 from django.conf.global_settings import AUTH_USER_MODEL
 
 password = os.environ.get('MY_PS')
@@ -151,10 +151,17 @@ dotenv.load_dotenv()
 email = os.getenv('EMAIL')
 password = os.getenv('PASSWORD')
 
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yandex.com'
+EMAIL_HOST = 'smtp.rambler.ru'
 EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
 EMAIL_HOST_USER = email
 EMAIL_HOST_PASSWORD = password
 
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER
 
