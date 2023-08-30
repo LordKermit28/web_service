@@ -23,6 +23,7 @@ class ProductForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
 
+
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get('name')
@@ -33,6 +34,10 @@ class ProductForm(forms.ModelForm):
 
         return cleaned_data
 
+class StaffProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['status', 'description', 'category']
 
 
 class VersionForm(forms.ModelForm):

@@ -1,16 +1,27 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
 from django.forms import inlineformset_factory
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.utils.text import slugify
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
-from catalog.forms import ProductForm, VersionForm, BlogForm
+from catalog.forms import ProductForm, VersionForm, BlogForm, StaffProductForm
 from catalog.models import Product, Version, Blog
+
+
+class ProductCreationMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_authenticated
+
+class ProductUpdateMixin(UserPassesTestMixin):
+    def test_func(self):
+        product = self.get_object()
+        return self.request.user == product.user or self.request.user.groups.filter(name='moder').exists()
 
 
 def index(request):
@@ -25,7 +36,7 @@ def contacts(request):
         print(name, phone, message)
     return render(request, 'catalog/contacts.html')
 
-class ProductCreateView(LoginRequiredMixin, CreateView):
+class ProductCreateView(ProductCreationMixin, CreateView):
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('list_product')
@@ -48,7 +59,8 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
             return super().form_valid(form)
 
 
-class ProductUpdateView(LoginRequiredMixin, UpdateView):
+
+class ProductUpdateView(ProductUpdateMixin, UpdateView):
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('list_product')
@@ -62,8 +74,12 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
             context_data['formset'] = VersionFormset(instance=self.object)
         return context_data
 
+    def get_form_class(self):
+        if self.request.user.is_staff:
+            return StaffProductForm
+        return super().get_form_class()
+
     def form_valid(self, form):
-        form.instance.user = self.request.user
         formset = self.get_context_data()['formset']
 
         if formset.is_valid():
@@ -71,11 +87,12 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
             formset.instance = self.object
             formset.save()
             return super().form_valid(form)
+        else:
+            raise self.form_invalid(form)
 
 
 class ProductListView(LoginRequiredMixin, ListView):
     model = Product
-
 
 class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
@@ -87,11 +104,20 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
 
         context['versions'] = versions
         return context
-@method_decorator(login_required, name='dispatch')
-class ProductDeleteView(DeleteView):
+
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
     success_url = reverse_lazy('list_product')
 
+def switch_status_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if product.status:
+        product.status = False
+    else:
+        product.status = True
+    product.save()
+
+    return redirect(reverse('list_product'))
 
 class BlogCreateView(LoginRequiredMixin, CreateView):
     model = Blog

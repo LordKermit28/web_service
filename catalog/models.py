@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 
+from users.models import User
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -21,6 +23,8 @@ class Product(models.Model):
     price = models.IntegerField()
     date_create = models.DateField(null=True, blank=True)
     date_last_change = models.DateField(null=True, blank=True)
+    status = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name}"

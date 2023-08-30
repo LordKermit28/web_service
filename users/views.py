@@ -44,7 +44,7 @@ class RegisterView(CreateView):
         )
         return super().form_valid(form)
 
-@method_decorator(login_required, name='dispatch')
+
 class VerifyEmailView(TemplateView):
     def get(self, request, *args, **kwargs):
         token = self.kwargs['token']
