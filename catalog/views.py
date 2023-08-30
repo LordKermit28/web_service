@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.forms import inlineformset_factory
 from django.shortcuts import render, get_object_or_404, redirect
@@ -24,7 +25,7 @@ def contacts(request):
         print(name, phone, message)
     return render(request, 'catalog/contacts.html')
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('list_product')
@@ -46,8 +47,8 @@ class ProductCreateView(CreateView):
             formset.save()
             return super().form_valid(form)
 
-@method_decorator(login_required, name='dispatch')
-class ProductUpdateView(UpdateView):
+
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('list_product')
@@ -62,19 +63,21 @@ class ProductUpdateView(UpdateView):
         return context_data
 
     def form_valid(self, form):
+        form.instance.user = self.request.user
         formset = self.get_context_data()['formset']
 
         if formset.is_valid():
+            self.object = form.save()
             formset.instance = self.object
             formset.save()
-        return super().form_valid(form)
+            return super().form_valid(form)
 
-@method_decorator(login_required, name='dispatch')
-class ProductListView(ListView):
+
+class ProductListView(LoginRequiredMixin, ListView):
     model = Product
 
-@method_decorator(login_required, name='dispatch')
-class ProductDetailView(DetailView):
+
+class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
 
     def get_context_data(self, **kwargs):
@@ -90,7 +93,7 @@ class ProductDeleteView(DeleteView):
     success_url = reverse_lazy('list_product')
 
 
-class BlogCreateView(CreateView):
+class BlogCreateView(LoginRequiredMixin, CreateView):
     model = Blog
     form_class = BlogForm
     def get_context_data(self, **kwargs):
@@ -118,14 +121,14 @@ class BlogCreateView(CreateView):
 class BlogListView(ListView):
     model = Blog
 
-class BlogUpdateView(UpdateView):
+class BlogUpdateView(LoginRequiredMixin, UpdateView):
     model = Blog
     form_class = BlogForm
     def get_success_url(self):
         blog_pk = self.kwargs['pk']
         return reverse('view_blog', kwargs={'pk': blog_pk})
 
-class BlogDetailView(DetailView):
+class BlogDetailView(LoginRequiredMixin, DetailView):
     model = Blog
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)

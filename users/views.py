@@ -2,24 +2,25 @@ import string
 import random
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
-from django.views import View
-from django.views.generic import UpdateView, CreateView, FormView
+from django.views.generic import UpdateView, CreateView, TemplateView
 from django.core.mail import send_mail
 from config import settings
 from users.forms import UserRegisterForm, UserProfileForm, UserPassportResetForm
 from users.models import User, VerificationToken
 
+def message_view(request):
+    return render(request, 'users/message.html')
 
 class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = 'users/register.html'
-    success_url = '/users/login/'
-
+    success_url = reverse_lazy('users:message')
     def generate_random_password(self):
         length = 12
         characters = string.ascii_letters + string.digits + string.punctuation
@@ -38,15 +39,13 @@ class RegisterView(CreateView):
         send_mail(
             subject='Подтвердите ваш адрес электронной почты',
             message=f'Привет! Пожалуйста, подтвердите свою электронную почту, перейдя по ссылке: {verify_url}',
-            from_email=settings.SERVER_EMAIL,
-            auth_user=settings.EMAIL_HOST_USER,
-            auth_password=settings.EMAIL_HOST_PASSWORD,
+            from_email=settings.EMAIL_HOST_USER,
             recipient_list=[new_user.email],
         )
         return super().form_valid(form)
 
-
-class VerifyEmailView(View):
+@method_decorator(login_required, name='dispatch')
+class VerifyEmailView(TemplateView):
     def get(self, request, *args, **kwargs):
         token = self.kwargs['token']
         verified_token = get_object_or_404(VerificationToken, token=token)
@@ -64,8 +63,8 @@ class VerifyEmailView(View):
         return redirect('users:invalid_token')
 
 
-@method_decorator(login_required, name='dispatch')
-class ProfileView(UpdateView):
+
+class ProfileView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserProfileForm
     success_url = reverse_lazy('users:profile')
@@ -74,7 +73,7 @@ class ProfileView(UpdateView):
         return self.request.user
 
 
-class UserResetPasswordView(UpdateView):
+class UserResetPasswordView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserPassportResetForm
     template_name = 'users/reset_password.html'
@@ -87,15 +86,14 @@ class UserResetPasswordView(UpdateView):
         return password
 
     def form_valid(self, form):
-
         response = super().form_valid(form)
-
         password = self.generate_random_password()
         self.object.set_password(password)
         self.object.save()
-        subject = 'New password'
-        message = f'Привет! Your new password: {password}'
-        from_email = settings.EMAIL_HOST_USER
-        recipient_list = [self.object.email]
-        send_mail(subject=subject, message=message, from_email=from_email, recipient_list=recipient_list)
+        send_mail(
+            subject='New password',
+            message=f'Привет! Your new password: {password}',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[object.email],
+        )
         return response

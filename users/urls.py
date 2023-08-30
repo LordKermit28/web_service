@@ -1,10 +1,7 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
-
-from . import views
-from .views import VerifyEmailView
 from users.apps import UsersConfig
-from users.views import RegisterView, ProfileView
+from users.views import RegisterView, ProfileView, message_view, VerifyEmailView
 
 app_name = UsersConfig.name
 
@@ -13,6 +10,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', RegisterView.as_view(template_name='users/register.html'), name='register'),
     path('profile/', ProfileView.as_view(), name='profile'),
+    path('message/', message_view, name='message'),
     path('verify_email/<str:token>/', VerifyEmailView.as_view(), name='verify_email'),
 ]
 
