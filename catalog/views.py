@@ -74,7 +74,7 @@ class ProductUpdateView(ProductUpdateMixin, UpdateView):
         return context_data
 
     def get_form_class(self):
-        if self.request.user.is_staff:
+        if self.request.user.is_staff and self.request.groups.filter(name="moder").exists():
             return StaffProductForm
         return super().get_form_class()
 

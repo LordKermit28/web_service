@@ -1,0 +1,37 @@
+{% extends 'catalog/base_product.html' %}
+{% load my_tags %}
+{% block content %}
+
+{% for object in object_list %}
+
+ <div class="row-12">
+     <div class="col-12">
+      <div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+        <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+          <div class="my-3 p-3">
+            <h2 class="display-5">{{ object }}</h2>
+              <div class="col-auto d-none d-lg-block">
+              <img src="{{ object.image|mediapath }}" />
+              </div>
+            <p class="text">{{ object.description|slice:":100" }}</p>
+            <ul class="list-unstyled text-small">
+              <li><a class="text-muted" href="/view_product/{{ object.id }}">Перейти к товару</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endfor %}
+<div class="row mb-12">
+    <div class="col-12">
+        <div class="card">
+          <div class="class_body">
+              <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="create_product">Create new</a></li>
+                </ul>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

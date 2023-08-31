@@ -1,0 +1,32 @@
+{% extends 'catalog/base_product.html' %}
+{% load my_tags %}
+{% block content %}
+
+ <div class="row mb-2">
+  <div class="col-md-12">
+    <div class="row g-0">
+      <div class="col p-4">
+        <strong class="d-inline-block mb-2 text-primary-emphasis">{{ object.category }} {{ object.slug }}</strong>
+        <h3 class="mb-0">{{ object.name }} {{ object.slug }}</h3>
+         <h2>Versions:</h2>
+        {% for version in versions %}
+          {% if version.status %}
+            <h4>{{ version.version_name }} {{ version.number }}</h4>
+        {% endif %}
+        {% endfor %}
+        <div class="mb-1 text-body-secondary">{{ object.price }}</div>
+        <p class="card-text mb-auto">{{ object.description }}</p>
+      </div>
+      <div class="col-auto d-none d-lg-block">
+        <img src="{{ product.image.url }}" />
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-6">
+  {% if user.is_staff or object.user == user %}
+  <div class="dtn-group">
+    <a href="{% url 'edit_product' object.pk %}" type="button" class="btn btn-sm btn-outline-secondary">Edit</a>
+  </div>
+  {% endif %}
+{% endblock %}
