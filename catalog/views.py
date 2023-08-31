@@ -50,6 +50,7 @@ class ProductCreateView(ProductCreationMixin, CreateView):
         return context_data
 
     def form_valid(self, form):
+        form.instance.user = self.request.user
         formset = self.get_context_data()['formset']
 
         if formset.is_valid():
@@ -57,8 +58,6 @@ class ProductCreateView(ProductCreationMixin, CreateView):
             formset.instance = self.object
             formset.save()
             return super().form_valid(form)
-
-
 
 class ProductUpdateView(ProductUpdateMixin, UpdateView):
     model = Product
