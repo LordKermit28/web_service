@@ -156,3 +156,13 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = email
 EMAIL_HOST_PASSWORD = password
 EMAIL_USE_SSL = True
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.getenv('CACHE_LOCAL'),
+    }
+}
+
+CACHE_ENABLE = os.getenv('CACHE_ENABLE') == 'True'

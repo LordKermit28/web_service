@@ -1,6 +1,7 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.forms import inlineformset_factory
 from django.http import Http404, HttpResponseForbidden
@@ -11,7 +12,8 @@ from django.utils.text import slugify
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
 from catalog.forms import ProductForm, VersionForm, BlogForm, StaffProductForm
-from catalog.models import Product, Version, Blog
+from catalog.models import Product, Version, Blog, Category
+from catalog.services import get_categories
 
 
 class ProductCreationMixin(UserPassesTestMixin):
@@ -35,7 +37,7 @@ def contacts(request):
 
         print(name, phone, message)
     return render(request, 'catalog/contacts.html')
-
+@method_decorator(login_required, name='dispatch')
 class ProductCreateView(ProductCreationMixin, CreateView):
     model = Product
     form_class = ProductForm
@@ -58,7 +60,7 @@ class ProductCreateView(ProductCreationMixin, CreateView):
             formset.instance = self.object
             formset.save()
             return super().form_valid(form)
-
+@method_decorator(login_required, name='dispatch')
 class ProductUpdateView(ProductUpdateMixin, UpdateView):
     model = Product
     form_class = ProductForm
@@ -89,10 +91,16 @@ class ProductUpdateView(ProductUpdateMixin, UpdateView):
         else:
             raise self.form_invalid(form)
 
-
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            template_name = 'edit_product.html'  # Шаблон для суперпользователей
+        else:
+            template_name = 'edit_product_moderator.html'  # Шаблон для модераторов
+        return [template_name]
+@method_decorator(login_required, name='dispatch')
 class ProductListView(LoginRequiredMixin, ListView):
     model = Product
-
+@method_decorator(login_required, name='dispatch')
 class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
 
@@ -103,7 +111,7 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
 
         context['versions'] = versions
         return context
-
+@method_decorator(login_required, name='dispatch')
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
     success_url = reverse_lazy('list_product')
@@ -187,3 +195,12 @@ def switch_status(request, pk):
 
 
 
+class CategoryListView(ListView):
+    model = Category
+    template_name = 'catalog/category_list.html'
+    context_object_name = 'categories'
+
+    def get_queryset(self):
+        cache.delete('categories')
+        categories = get_categories()
+        return categories

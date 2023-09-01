@@ -1,0 +1,31 @@
+{% extends 'catalog/base.html' %}
+{% block content %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table class="table">
+    <thead>
+    <thead>
+    <tr>
+    <tbody>
+    <th scope="col"></th>
+    {% for category in categories %}
+    <tr>
+        <th scope="row"></th>
+        <td> {{ category.name }}</td>
+    </tr>
+    </thead>
+    {% endfor %}
+</table>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
+{% endblock %}

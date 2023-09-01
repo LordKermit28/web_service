@@ -1,5 +1,5 @@
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
@@ -28,9 +28,6 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-    class Meta():
-        pass
-
 
 class Version(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='product')

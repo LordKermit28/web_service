@@ -9,7 +9,6 @@ class BlogForm(forms.ModelForm):
     class Meta:
         model = Blog
         fields = ('title', 'content', 'preview')
-        # exclude = ('published_status',)
 
 
 class ProductForm(forms.ModelForm):
@@ -17,12 +16,11 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ('name', 'description', 'image', 'category', 'price',)
         exclude = ('published_status',)
-        
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
-
 
     def clean(self):
         cleaned_data = super().clean()
@@ -33,6 +31,7 @@ class ProductForm(forms.ModelForm):
                 raise forms.ValidationError('You utilized a banned word')
 
         return cleaned_data
+
 
 class StaffProductForm(forms.ModelForm):
     class Meta:
